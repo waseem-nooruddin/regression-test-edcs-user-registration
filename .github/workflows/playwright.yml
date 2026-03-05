@@ -6,59 +6,77 @@ on:
   pull_request:
     branches: [ main, master ]
   schedule:
-    - cron: '30 22 * * *'  # 4 AM IST daily
+    - cron: '30 22 * * *'
   workflow_dispatch:
 
 jobs:
   smoke-tests:
     name: Smoke Tests
-    timeout-minutes: 30
     runs-on: ubuntu-latest
-    env:
-      TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-      PLAYWRIGHT_REPORT_URL: ${{ secrets.PLAYWRIGHT_REPORT_URL }}
+    timeout-minutes: 30
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: Install dependencies
-        run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps
+
       - name: Run Smoke Tests
-        id: smoke
         run: npx playwright test --grep @smoke --reporter=html
+
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        if: always()
         with:
           name: smoke-report
           path: playwright-report/
           retention-days: 30
 
+
   regression-tests:
     name: Regression Tests
     needs: smoke-tests
-    if: success()  # Runs only if smoke-tests pass
-    timeout-minutes: 60
+    if: needs.smoke-tests.result == 'success'
     runs-on: ubuntu-latest
-    env:
-      TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-      PLAYWRIGHT_REPORT_URL: ${{ secrets.PLAYWRIGHT_REPORT_URL }}
+    timeout-minutes: 60
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: Install dependencies
-        run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps
+
       - name: Run Regression Tests
         run: npx playwright test --grep @regression --reporter=html
+
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        if: always()
         with:
           name: regression-report
           path: playwright-report/
           retention-days: 30
+
+
+  notify:
+    name: Send Teams Notification
+    needs: [smoke-tests, regression-tests]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Teams Message
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "text": "**Playwright Automation Results** \n\n Smoke Tests: ${{ needs.smoke-tests.result }} \n Regression Tests: ${{ needs.regression-tests.result }} \n\n Reports: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }' \
+          ${{ secrets.TEAMS_WEBHOOK_URL }}
