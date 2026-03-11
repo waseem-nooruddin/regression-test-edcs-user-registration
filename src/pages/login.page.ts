@@ -12,6 +12,25 @@ export class LoginPage {
     await this.page.fill("#root_password", password);
     await this.page.getByRole("button", { name: "Sign In" }).click();
   }
+
+    async loginPage(username: string, password: string) {
+
+  }
+
+  async loginWithchangePassword(username: string, password: string, location: string) {
+    await this.page.getByRole('button', { name: 'Continue' }).click();
+    await this.page.fill("#root_currentPassword", username);
+    await this.page.fill("#root_newPassword", password);
+    await this.page.fill("#root_reNewPassword", password);
+    await this.page.getByRole('button', { name: 'Reset Password' }).click();
+  }
+
+  async SelectYourBranch(location: string) {
+    await this.page.click("#demo-simple-select-outlined");
+    await this.page.getByRole("option", { name: location }).first().click();
+    await this.page.getByRole("button", { name: "Submit" }).click();
+  }
+
   async getErrorMessage(): Promise<string> {
     return (
       (await this.page.locator('//h3[@data-test="error"]').textContent()) ?? ""

@@ -1,7 +1,9 @@
 {
     "userid": "166516 - Testing Five ",
     "searchingUser": "166516 - Testing Five ",
-    "Employee_Number": "17631",
+    "Employee_Number": "50432",
+    "User_Role_Id": "Administrative Officer",
+    "NegativeEmployee_Number": "17672",
     "Emplloyee_EPFNumber": "17631",
     "loginId_Authorization": "17631",
     "userId_Restriction": "166509rn - Qa One",
@@ -15,5 +17,10 @@
     "enterRoleName": "Test Roles",
     "enterRoleDescription": "This is a test roles",
     "selectUserRole": "EDCS Admin",
-    "roleName_AdminRole": "EDCS Admin Role"
+    "roleName_AdminRole": "EDCS Admin Role",
+    "ndEmployee_Number": "60539",
+    "ndEmployee_Password": "115edfb9-a",
+
+    "location":"999-HO",
+    "restrictionReason":"Testing"
 }

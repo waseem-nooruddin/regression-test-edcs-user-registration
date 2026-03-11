@@ -25,12 +25,12 @@ export class UserManagementPage {
 
   async enterUserRoleId(): Promise<void> {
     await this.page.locator("#root_userRoleId").click();
+  }
+  async selectUserRoleId(RoleId: string): Promise<void> {
     await this.page
-      .getByRole("option", { name: "Administrative Officer" })
+      .getByRole("option", { name: RoleId })
       .waitFor({ state: "visible" });
-    await this.page
-      .getByRole("option", { name: "Administrative Officer" })
-      .click();
+    await this.page.getByRole("option", { name: RoleId }).click();
   }
 
   async enterSubmitButton(): Promise<void> {
@@ -47,5 +47,15 @@ export class UserManagementPage {
         "//nav[@aria-label='breadcrumb']//p[normalize-space()='User Management']",
       )
       .isVisible();
+  }
+
+  async clickInactiveButton(restrictionReason: string): Promise<void> {
+    await this.page.getByRole("button", { name: "Inactive" }).first().click();
+    await this.page.locator("#root_isRestrictionPermanent").click();
+    await this.page
+      .locator('li[role="option"]', { hasText: "Permanent" })
+      .click();
+    await this.page.locator("#root_restrictionReason").fill(restrictionReason);
+    await this.page.getByRole("button", { name: "Inactivate" }).click();
   }
 }
